@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/onnxjs/dist/onnx.min.js"></script>
+    <script>
+        window.onload = function () {
+            let imageInput = document.getElementById("image-input");
+            imageInput.addEventListener("change", handleInput, false);
+        }
+
+        async function handleInput() {
+            // let image = this.files[0];
+            // let pallete = document.getElementsByTagName('img')[0]
+            // console.log(image);
+
+            // url = window.URL.createObjectURL(image)
+            // pallete.src = url;
+            // pallete.height = 60
+            // console.log(url);
+
+            // const session = new onnx.InferenceSession({
+            //     backendHint: 'webgl'
+            // });
+            // const imageSize = 60;
+            // const imageLoader = new ImageLoader(imageSize, imageSize);
+            // const imageData = await imageLoader.getImageData(url);
+            // console.log(imageData);
+
+            // pallete.onload = function () {
+            //     window.URL.revokeObjectURL(url);
+            // }
+            const canvas = document.querySelector("canvas");
+            const ctx = canvas.getContext("2d");
+
+            const image = new Image();
+            let pallete = document.getElementsByTagName('img')[0]
+
+            url = window.URL.createObjectURL(this.files[0])
+            image.src = url
+            image.onload = () => {
+                target_size = [image.width / 5, image.height / 5]
+                ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, target_size[0], target_size[1])
+                imageData = ctx.getImageData(0, 0, target_size[0], target_size[1]);
+                console.log(imageData);
+
+                window.URL.revokeObjectURL(url);
+            }
+        }
+    </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="file" id="image-input">
+    <img src="" alt="">
+    <canvas></canvas>
+</body>
+
+</html>
