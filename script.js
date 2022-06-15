@@ -4,12 +4,12 @@ window.onload = function () {
 }
 
 function handleImageInput() {
-    const ctx = document.querySelector("canvas").getContext("2d");
+    const canvas = document.querySelector("canvas");
     const [image, url] = getImageAndUrl(this.files[0])
 
     image.onload = () => {
-        draw(image, ctx)
-        const imageData = getImageData(ctx)
+        draw(image, canvas, 256)
+        const imageData = getImageData(canvas)
         window.URL.revokeObjectURL(url);
         console.log(imageData);
         // character = predictCharacter(imageData)
@@ -24,14 +24,23 @@ function getImageAndUrl(file) {
     return [image, url]
 }
 
-function draw(image, ctx) {
-    target_size = [image.width / 5, image.height / 5];
-    ctx.clearRect(0, 0, image.width, image.height);
+function draw(image, canvas, resize) {
+    const ctx = canvas.getContext('2d');
+    let max_side = Math.max(image.width, image.height);
+    let min_side = Math.min(image.width, image.height);
+    max_side *= resize / min_side;
+    min_side = resize;
+    target_size = image.width > image.height ? [max_side, min_side] : [min_side, max_side]
+    console.log(target_size);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.width = target_size[0];
+    canvas.height = target_size[1];
     ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, target_size[0], target_size[1]);
 }
 
-function getImageData(ctx) {
-    imageData = ctx.getImageData(0, 0, target_size[0], target_size[1]);
+function getImageData(canvas) {
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData((canvas.width-224)/2, (canvas.width-224)/2, 224, 224)
     return imageData;
 }
 
