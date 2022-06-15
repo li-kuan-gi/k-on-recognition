@@ -1,5 +1,7 @@
+const sess = new onnx.InferenceSession();
+const loadingModelPromise = sess.loadModel("./k-on.onnx")
 window.onload = function () {
-    let imageInput = document.getElementById("image-input");
+    const imageInput = document.getElementById("image-input");
     imageInput.addEventListener("change", handleImageInput, false);
 }
 
@@ -12,9 +14,37 @@ function handleImageInput() {
         const imageData = getImageData(canvas)
         window.URL.revokeObjectURL(url);
         console.log(imageData);
-        // character = predictCharacter(imageData)
-        // showResult(character)
+        loadingModelPromise.then(() => {
+            predictCharacter(imageData, sess).then(
+                (character) => { showResult(character); }
+            );
+        })
     }
+}
+
+async function predictCharacter(imageData, sess) {
+    data = new Float32Array(extract(imageData.data));
+
+    const input = new onnx.Tensor(data, "float32", [1, 3, 224, 224]);
+    const outputMap = await sess.run([input]);
+    const outputTensor = outputMap.values().next().value;
+    const predictions = outputTensor.data;
+    const maxPrediction = predictions.indexOf(Math.max(...predictions));
+
+    characters = ['azusa', 'mio', 'ritsu', 'sawako', 'tsumugi', 'ui', 'yui'];
+
+    return character[maxPrediction];
+}
+
+function extract(data) {
+    // const new_data = [];
+    // for (channel = 0; channel < 3; channel++) {
+    //     for (idx = channel; idx < 224 * 224 * 4; idx + 4) {
+    //         new_data.push(data[idx]);
+    //     }
+    // }
+    // return new_data;
+    return data.slice(224 * 224);
 }
 
 function getImageAndUrl(file) {
@@ -40,7 +70,7 @@ function draw(image, canvas, resize) {
 
 function getImageData(canvas) {
     const ctx = canvas.getContext('2d');
-    const imageData = ctx.getImageData((canvas.width-224)/2, (canvas.width-224)/2, 224, 224)
+    const imageData = ctx.getImageData((canvas.width - 224) / 2, (canvas.width - 224) / 2, 224, 224)
     return imageData;
 }
 
