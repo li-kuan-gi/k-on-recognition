@@ -1,6 +1,10 @@
+const sessionPromise = ort.InferenceSession.create('./k-on.onnx');
+let session;
+
 window.onload = function () {
     const imageInput = document.getElementById("image-input");
     imageInput.addEventListener("change", handleImageInput, false);
+    sessionPromise.then((r) => { session = r; })
 }
 
 function handleImageInput() {
@@ -8,21 +12,18 @@ function handleImageInput() {
     const [image, url] = getImageAndUrl(this.files[0])
 
     image.onload = () => {
-        draw(image, canvas, 256)
-        const imageData = getImageData(canvas)
+        clearResult();
+        draw(image, canvas, 256);
+        const imageData = getImageData(canvas);
         window.URL.revokeObjectURL(url);
         predictCharacter(imageData);
     }
 }
 
 async function predictCharacter(imageData) {
-    const session = await ort.InferenceSession.create('./k-on.onnx');
-
     data = new Float32Array(extract(imageData.data));
 
     const input = new ort.Tensor("float32", data, [1, 3, 224, 224]);
-
-    console.log(input);
 
     const outputMap = await session.run({ 'input': input });
     const prediction = outputMap.output.data;
@@ -70,4 +71,9 @@ function getImageData(canvas) {
 function showResult(result) {
     const display = document.getElementById("prediction");
     display.innerHTML = result;
+}
+
+function clearResult() {
+    const display = document.getElementById("prediction");
+    display.innerHTML = '';
 }
