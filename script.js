@@ -1,4 +1,4 @@
-const sessionPromise = ort.InferenceSession.create('./k-on-gpu.onnx');
+const sessionPromise = ort.InferenceSession.create('./k-on.onnx');
 
 window.onload = function () {
     const imageInput = document.getElementById("image-input");
