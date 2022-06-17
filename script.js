@@ -1,10 +1,8 @@
-const sessionPromise = ort.InferenceSession.create('./k-on.onnx');
-let session;
+const sessionPromise = ort.InferenceSession.create('./k-on-gpu.onnx');
 
 window.onload = function () {
     const imageInput = document.getElementById("image-input");
     imageInput.addEventListener("change", handleImageInput, false);
-    sessionPromise.then((r) => { session = r; })
 }
 
 function handleImageInput() {
@@ -16,11 +14,11 @@ function handleImageInput() {
         draw(image, canvas, 256);
         const imageData = getImageData(canvas);
         window.URL.revokeObjectURL(url);
-        predictCharacter(imageData);
+        sessionPromise.then((session) => { predictCharacter(imageData, session); })
     }
 }
 
-async function predictCharacter(imageData) {
+async function predictCharacter(imageData, session) {
     data = new Float32Array(extract(imageData.data));
 
     const input = new ort.Tensor("float32", data, [1, 3, 224, 224]);
