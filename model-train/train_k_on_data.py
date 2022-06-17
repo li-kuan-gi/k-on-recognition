@@ -1,7 +1,8 @@
 from pre_process import get_transforms
-from custom_datasets import ClassifiedDatasets
+from custom_datasets import ClassifiedDatasets, get_dataloaders
 from model import get_model
 from train_and_test import train_model
+from convert import convert_to_onnx
 
 import torch
 from torch.backends import cudnn
@@ -12,8 +13,7 @@ train_transform, eval_transform = get_transforms()
 
 k_on_datasets = ClassifiedDatasets('data', train_transform, eval_transform,
                                    validation_split=0.2)
-train_loader, val_loader, test_loader = torch.utils.data.DataLoader(
-    k_on_datasets.test, batch_size=4, shuffle=True, num_workers=4)
+train_loader, val_loader, test_loader = get_dataloaders(k_on_datasets)
 
 model = get_model(output_size=len(k_on_datasets.classes))
 
@@ -28,3 +28,9 @@ train_model(model, train_loader, val_loader,
             device=device)
 
 torch.save(model.state_dict(), 'k-on.pth')
+convert_to_onnx(model, 'k-on.onnx',
+                input_names=['input'],
+                output_names=['output'])
+convert_to_onnx(model, '../k-on.onnx',
+                input_names=['input'],
+                output_names=['output'])
